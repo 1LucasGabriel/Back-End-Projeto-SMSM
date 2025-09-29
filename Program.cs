@@ -18,8 +18,14 @@ namespace APIProjeto
             builder.Services.AddSwaggerGen();
 
             // ---------------- POSTGRES CONNECTION ----------------
+            //builder.Services.AddDbContext<MyDbContext>(options =>
+            //    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
             builder.Services.AddDbContext<MyDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(connectionString));
+
 
             builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             builder.Services.AddScoped<IPerfilRepository, PerfilRepository>();
