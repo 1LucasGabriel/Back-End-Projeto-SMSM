@@ -1,6 +1,7 @@
 ﻿using APIProjeto.Data;
 using APIProjeto.Models;
 using APIProjeto.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIProjeto.Repositories
@@ -16,10 +17,41 @@ namespace APIProjeto.Repositories
 
         public async Task<Agendamento> Post(Agendamento agendamento)
         {
-            await _dbContext.Agendamentos.AddAsync(agendamento);
-            await _dbContext.SaveChangesAsync();
-            return agendamento;
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                await _dbContext.Agendamentos.AddAsync(agendamento);
+
+                var vaga = await _dbContext.Vagas.FindAsync(agendamento.IdVaga);
+                if (vaga == null)
+                    throw new Exception("Vaga não encontrada.");
+
+                if (vaga.Quantidade <= 0)
+                    throw new Exception("Não há vagas disponíveis.");
+
+                vaga.Quantidade -= 1;
+                _dbContext.Vagas.Update(vaga);
+
+                var demanda = await _dbContext.Demandas.FindAsync(agendamento.IdDemanda);
+                if (demanda == null)
+                    throw new Exception("Demanda não encontrada.");
+
+                demanda.Status = "Agendado";
+                _dbContext.Demandas.Update(demanda);
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return agendamento;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
+
 
         public async Task<bool> Delete(int id)
         {
@@ -59,5 +91,48 @@ namespace APIProjeto.Repositories
             await _dbContext.SaveChangesAsync();
             return agendamentoPorId;
         }
+
+
+        public async Task<List<dynamic>> GetAllComposto()
+        {
+            var agendamentos = await _dbContext.Agendamentos
+
+                .Join(
+                    _dbContext.Demandas,
+                    a => a.IdDemanda,
+                    d => d.Id,
+                    (a, d) => new { Agendamento = a, Demanda = d }
+                )
+
+                .Join(
+                    _dbContext.Pacientes,
+                    ad => ad.Demanda.IdPaciente,
+                    p => p.Id,
+                    (ad, p) => new { ad.Agendamento, ad.Demanda, Paciente = p }
+                )
+
+                .Join(
+                    _dbContext.Procedimentos,
+                    adp => adp.Demanda.IdProcedimento,
+                    pr => pr.Id,
+                    (adp, pr) => new {
+                        adp.Agendamento.Id,
+                        adp.Agendamento.IdDemanda,
+                        adp.Agendamento.IdVaga,
+                        adp.Agendamento.IdUsuarioRegulador,
+                        adp.Agendamento.DataAgendamento,
+                        adp.Agendamento.DataRealizacao,
+                        adp.Agendamento.StatusComparecimento,
+
+                        PacienteNome = adp.Paciente.Nome,
+                        ProcedimentoNome = pr.NomeProcedimento
+                    }
+                )
+
+                .ToListAsync<dynamic>();
+
+            return agendamentos;
+        }
+
     }
 }

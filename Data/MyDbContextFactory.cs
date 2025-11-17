@@ -18,7 +18,7 @@ namespace APIProjeto.Data
             var optionsBuilder = new DbContextOptionsBuilder<MyDbContext>();
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            optionsBuilder.UseNpgsql(connectionString);
+            optionsBuilder.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 36)));
 
             return new MyDbContext(optionsBuilder.Options);
         }

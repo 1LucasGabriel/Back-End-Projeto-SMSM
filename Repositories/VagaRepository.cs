@@ -57,5 +57,27 @@ namespace APIProjeto.Repositories
             await _dbContext.SaveChangesAsync();
             return vagaPorId;
         }
+
+        public async Task<List<dynamic>> GetVagasComUnidades()
+        {
+            var resultado = await _dbContext.Vagas
+                .Join(
+                    _dbContext.UnidadesSaude,
+                    v => v.IdUnidadeOfertante,
+                    u => u.Id,
+                    (v, u) => new {
+                        UnidadeNome = u.Nome,
+                        u.Tipo,
+                        u.Regiao,
+                        QuantidadeVagas = v.Quantidade,
+                        v.MesAnoReferencia,
+                        v.Id
+                    }
+                )
+                .ToListAsync<dynamic>();
+
+            return resultado;
+        }
+
     }
 }

@@ -9,5 +9,6 @@ namespace APIProjeto.Repositories.Interfaces
         Task<Vaga> Post(Vaga vaga);
         Task<Vaga> Put(Vaga vaga, int id);
         Task<bool> Delete(int id);
+        Task<List<dynamic>> GetVagasComUnidades();
     }
 }

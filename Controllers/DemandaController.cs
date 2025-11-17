@@ -17,7 +17,7 @@ namespace APIProjeto.Controllers
 
         [HttpGet]
         [Route("Buscar")]
-        public async Task<ActionResult<List<Demanda>>> GetAll()
+        public async Task<ActionResult> GetAll()
         {
             var demandas = await _demandaRepository.GetAll();
             return Ok(demandas);

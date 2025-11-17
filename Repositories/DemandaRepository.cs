@@ -1,6 +1,7 @@
 ﻿using APIProjeto.Data;
 using APIProjeto.Models;
 using APIProjeto.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIProjeto.Repositories
@@ -32,10 +33,38 @@ namespace APIProjeto.Repositories
             return true;
         }
 
-        public async Task<List<Demanda>> GetAll()
+        public async Task<List<dynamic>> GetAll()
         {
-            return await _dbContext.Demandas.ToListAsync();
+            var demandas = await _dbContext.Demandas
+                .Join(
+                    _dbContext.Pacientes,
+                    d => d.IdPaciente,
+                    p => p.Id,
+                    (d, p) => new { Demanda = d, Paciente = p }
+                )
+                .Join(
+                    _dbContext.Procedimentos,
+                    dp => dp.Demanda.IdProcedimento,
+                    pr => pr.Id,
+                    (dp, pr) => new {
+                        dp.Demanda.Id,
+                        dp.Demanda.IdPaciente,
+                        PacienteNome = dp.Paciente.Nome,
+                        dp.Demanda.DataSolicitacao,
+                        dp.Demanda.Status,
+                        dp.Demanda.Prioridade,
+                        dp.Demanda.IdUnidadeSolicitante,
+                        dp.Demanda.IdProcedimento,
+                        ProcedimentoNome = pr.NomeProcedimento
+                    }
+                )
+                .ToListAsync<dynamic>();
+
+            return demandas;
         }
+
+
+
 
         public async Task<Demanda> GetById(int id)
         {

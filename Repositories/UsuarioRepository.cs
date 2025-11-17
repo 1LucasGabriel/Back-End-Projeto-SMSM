@@ -16,6 +16,10 @@ namespace APIProjeto.Repositories
         {
             return await _dbContext.Usuarios.FirstOrDefaultAsync(x => x.Id == id);
         }
+        public async Task<Usuario> GetByCpfAsync(string cpf)
+        {
+            return await _dbContext.Usuarios.FirstOrDefaultAsync(x => x.Cpf == cpf);
+        }
 
         public async Task<List<Usuario>> GetAll()
         {

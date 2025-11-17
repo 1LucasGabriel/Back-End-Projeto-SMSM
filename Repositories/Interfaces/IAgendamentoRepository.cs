@@ -9,5 +9,6 @@ namespace APIProjeto.Repositories.Interfaces
         Task<Agendamento> Post(Agendamento agendamento);
         Task<Agendamento> Put(Agendamento agendamento, int id);
         Task<bool> Delete(int id);
+        Task<List<dynamic>> GetAllComposto();
     }
 }

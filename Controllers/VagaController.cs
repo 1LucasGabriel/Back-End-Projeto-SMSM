@@ -1,4 +1,5 @@
 ﻿using APIProjeto.Models;
+using APIProjeto.Repositories;
 using APIProjeto.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,5 +52,13 @@ namespace APIProjeto.Controllers
             var apagado = await _vagaRepository.Delete(id);
             return Ok(apagado);
         }
+
+        [HttpGet("Unidades")]
+        public async Task<ActionResult> GetVagasUnidades()
+        {
+            var resultado = await _vagaRepository.GetVagasComUnidades();
+            return Ok(resultado);
+        }
+
     }
 }

@@ -51,5 +51,13 @@ namespace APIProjeto.Controllers
             var apagado = await _agendamentoRepository.Delete(id);
             return Ok(apagado);
         }
+
+        [HttpGet]
+        [Route("BuscarComposto")]
+        public async Task<ActionResult> GetAllComposto()
+        {
+            var agendamentos = await _agendamentoRepository.GetAllComposto();
+            return Ok(agendamentos);
+        }
     }
 }
