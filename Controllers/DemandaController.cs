@@ -1,6 +1,8 @@
-﻿using APIProjeto.Models;
+﻿using APIProjeto.Data;
+using APIProjeto.Models;
 using APIProjeto.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace APIProjeto.Controllers
 {
@@ -9,10 +11,12 @@ namespace APIProjeto.Controllers
     public class DemandaController : ControllerBase
     {
         private readonly IDemandaRepository _demandaRepository;
+        private readonly MyDbContext _dbContext;
 
-        public DemandaController(IDemandaRepository demandaRepository)
+        public DemandaController(IDemandaRepository demandaRepository, MyDbContext dbContext)
         {
             _demandaRepository = demandaRepository;
+            _dbContext = dbContext;
         }
 
         [HttpGet]
@@ -51,5 +55,31 @@ namespace APIProjeto.Controllers
             var apagado = await _demandaRepository.Delete(id);
             return Ok(apagado);
         }
+
+        [HttpGet("demanda-especialidade")]
+        public async Task<IActionResult> GetDemandasPorEspecialidade()
+        {
+            var resultado = await _dbContext.Demandas
+                .Join(_dbContext.Procedimentos,
+                    d => d.IdProcedimento,
+                    p => p.Id,
+                    (d, p) => new { d, p })
+                .Join(_dbContext.Especialidades,
+                    dp => dp.p.IdEspecialidade,
+                    e => e.Id,
+                    (dp, e) => new { EspecialidadeNome = e.Nome })
+                .GroupBy(x => x.EspecialidadeNome)
+                .Select(g => new
+                {
+                    label = g.Key,
+                    value = g.Count()
+                })
+                .OrderByDescending(x => x.value)
+                .ToListAsync();
+
+            return Ok(resultado);
+        }
+
+
     }
 }
