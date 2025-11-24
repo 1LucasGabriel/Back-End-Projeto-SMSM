@@ -43,6 +43,10 @@ namespace APIProjeto.Repositories
 
             return paciente;
         }
+        public async Task<Paciente> GetByCpfAsync(string cpf)
+        {
+            return await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Cpf == cpf);
+        }
 
         public async Task<Paciente> Put(Paciente paciente, int id)
         {

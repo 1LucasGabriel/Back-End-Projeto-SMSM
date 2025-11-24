@@ -115,17 +115,27 @@ namespace APIProjeto.Repositories
                     _dbContext.Procedimentos,
                     adp => adp.Demanda.IdProcedimento,
                     pr => pr.Id,
-                    (adp, pr) => new {
-                        adp.Agendamento.Id,
-                        adp.Agendamento.IdDemanda,
-                        adp.Agendamento.IdVaga,
-                        adp.Agendamento.IdUsuarioRegulador,
-                        adp.Agendamento.DataAgendamento,
-                        adp.Agendamento.DataRealizacao,
-                        adp.Agendamento.StatusComparecimento,
+                    (adp, pr) => new { adp.Agendamento, adp.Demanda, adp.Paciente, Procedimento = pr }
+                )
 
-                        PacienteNome = adp.Paciente.Nome,
-                        ProcedimentoNome = pr.NomeProcedimento
+                .Join(
+                    _dbContext.Usuarios,
+                    adpp => adpp.Agendamento.IdUsuarioRegulador,
+                    u => u.Id,
+                    (adpp, u) => new {
+                        adpp.Agendamento.Id,
+                        adpp.Agendamento.IdDemanda,
+                        adpp.Agendamento.IdVaga,
+                        adpp.Agendamento.IdUsuarioRegulador,
+                        adpp.Agendamento.DataAgendamento,
+                        adpp.Agendamento.DataRealizacao,
+                        adpp.Agendamento.StatusComparecimento,
+
+                        PacienteNome = adpp.Paciente.Nome,
+                        ProcedimentoNome = adpp.Procedimento.NomeProcedimento,
+
+                        MedicoNome = u.Nome,
+                        Justificativa = adpp.Demanda.Justificativa
                     }
                 )
 
